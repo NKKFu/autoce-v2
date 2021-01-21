@@ -2,3 +2,5 @@ token.pickle
 venv
 backup
 backup-pdf
+
+credentials.json
