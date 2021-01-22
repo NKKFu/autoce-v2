@@ -1,4 +1,3 @@
-from __future__ import print_function
 import pickle
 from os import path, makedirs
 from googleapiclient.discovery import build
@@ -8,8 +7,7 @@ from googleapiclient.http import MediaIoBaseDownload
 import io
 import pathlib
 from datetime import datetime
-
-# TODO Login no Google Drive com o OAuth 2.0
+import json
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly',
@@ -17,22 +15,25 @@ SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly',
           'https://www.googleapis.com/auth/documents.readonly',
           'https://www.googleapis.com/auth/spreadsheets.readonly']
 
-creds = None
 # The file token.pickle stores the user's access and refresh tokens, and is
 # created automatically when the authorization flow completes for the first
 # time.
+creds = None
 if path.exists('token.pickle'):
     with open('token.pickle', 'rb') as token:
         creds = pickle.load(token)
 
-# If there are no (valid) credentials available, let the user log in.
+# If there are no (valid) credentials available, let the user log in from 
+# his default browser
 if not creds or not creds.valid:
     if creds and creds.expired and creds.refresh_token:
         creds.refresh(Request())
     else:
-        flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
+        flow = InstalledAppFlow.from_client_secrets_file ('credentials.json', 
+            SCOPES)
         creds = flow.run_local_server(port=0)
-    # Save the credentials for the next log in
+    # Save the credentials for the next log in so we don't need to authorize
+    # every time we execute this code
     with open('token.pickle', 'wb') as token:
         pickle.dump(creds, token)
 
@@ -40,82 +41,91 @@ service = build('drive', 'v3', credentials=creds)
 sheetsService = build('sheets', 'v4', credentials=creds)
 docsService = build('docs', 'v1', credentials=creds)
 
-DATABASE_SHEET = '1tqXLhhnO1jdvmD6ZHkCizdj946JqexOZmeh48AugtNo'
-DEFAULT_FOLDER = '1AUDZPuUGHPzBTXGuRTfPezgcdCE6ummk'
+config = json.loads()
 
-TEMPLATE_ENGINEERING = '1xED809H0-AgtPwJRPtr-piBhCYRl0ZbkPAJXjxN0LWI'
-TEMPLATE_BUSINESSPLAN = '1Fz9bdTujxcQmA03iUFt8mGgvvV2_4mc6HsmD4i0Tw-k'
-TEMPLATE_TEAMWORK = '1YOVMBbSXPFGIneTFW8XNJXOO2ilZYTeq1VmGf77NoGU';
+DATABASE_SHEET = config['DATABASE_SHEET']
+DEFAULT_FOLDER = config['DEFAULT_FOLDER']
 
-# Como faremos:
+TEMPLATE_ENGINEERING = config['TEMPLATE_ENGINEERING']
+TEMPLATE_BUSINESSPLAN = config['TEMPLATE_BUSINESSPLAN']
+TEMPLATE_TEAMWORK = config['TEMPLATE_TEAMWORK']
 
-# Pega todos os relatórios do banco de dados
 sheet = sheetsService.spreadsheets()
 
-# Contagem de colunas na primeira row
-values = sheet.values().get(spreadsheetId=DATABASE_SHEET, range="A1:Z1", majorDimension="COLUMNS").execute()['values']
+# Count how many columns
+values = sheet.values().get(spreadsheetId=DATABASE_SHEET,
+                            range="A1:Z1",
+                            majorDimension="COLUMNS").execute()['values']
 column_quantity = len(values)
+
+# Convert columns quantity to alphabet (1=a, 2=b, 3=b ...)
 column_in_char = chr(column_quantity + 96)
 
-values = sheet.values().get(spreadsheetId=DATABASE_SHEET, range=f"A2:{column_in_char}999", majorDimension="ROWS").execute()['values']
+# Get all rows in the database
+values = sheet.values().get(spreadsheetId=DATABASE_SHEET, 
+                            range=f"A2:{column_in_char}999", 
+                            majorDimension="ROWS").execute()['values']
 
-# Todos terao a mesma quantidade de elementos
+# We need to add some columns if it doesn't exist on row
+# every single row needs to have same column quantity
 for row in values:
     while len(row) < column_quantity:
         row.append("")
 
-# Backup destes dados em uma pasta local
+# Backup of database (folder name)
 BACKUP_PATH="backup"
+# Backup of generated PDF's  (folder name)
 BACKUP_PATH_PDF="backup-pdf"
 
+# Create path if doesn't exist yet
+# it will create at same path of this code
 if not path.exists(BACKUP_PATH):
     makedirs(BACKUP_PATH)
 
-file_name = f"{datetime.now().day}.{datetime.now().day}_{datetime.now().hour}_{datetime.now().minute}_{datetime.now().second}"
+# Write database backup in format: month.day_hour_minute_second to doesn't conflit to another backup
+curr_time = datetime.now()
+file_name = f"{curr_time.month}.{curr_time.day}_{curr_time.hour}_{curr_time.minute}_{curr_time.second}"
 with open (path.join(pathlib.Path().absolute(), BACKUP_PATH, f"{file_name}.bkp"), 'w') as file:
     file.write(str(values))
 
-# ~ Processo de formatação manual de arquivos ~ #
-
-# Para cada relatório dentro do banco de dados:
-# Ignora o header
+# For each row in the database (ignore the first one, based on query)
 for value in values:
-    # TODO Crie um título no formato: [DATADORELATORIO]$[CARIMBODATAHORA]$[AREADORELATORIO]
 
-    # Formatação
-    date = str(value[2]).replace("/", "-")
-    created_at = str(value[0]).replace("/", "-")
-    area = str(value[1])
+    # Some changes because of the date and time format
+    # (if doesn't do that, can causes conflicts due the "/")
+    date        = str(value[2]).replace("/", "-")
+    created_at  = str(value[0]).replace("/", "-")
+    area        = str(value[1])
 
+    # Create a default title as format: [DATE]$[CREATED_AT]$[AREA]
     documentTitle = f"{date}${created_at}${area}"
-    print(documentTitle)
+    print(f"Using title: {documentTitle}")
 
-    # TODO Pega uma pasta de referência dentro do Google Drive:
-    # TODO Veja se há algum relatório neste formato dentro da pasta selecionada,
+    # Check if is there any document with this title
     results = service.files().list(q = f"'{DEFAULT_FOLDER}' in parents and name='{documentTitle}' and trashed = false", pageSize=1, fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
-    print(items)
+    print(f"Found: {str(items)}")
 
-    # Relação de áreas e uid dos documentos
-    areas = {
-        'Trabalho em equipe': TEMPLATE_TEAMWORK,
-        'Engenharia': TEMPLATE_ENGINEERING,
-        'Plano de Negócios': TEMPLATE_BUSINESSPLAN
-    }
-
-    # Área do relatório
-    area = value[1]
-
-    # TODO Se existir, ignore-o e continue
+    # If already exist, don't create another
     if (len(items) > 0):
         continue
 
-    # TODO Se não existir, crie-o utilizando as informações do banco de dados
+    # Else, create one using database information
     else:
+        # Relations between area and Document ID for template
+        # TODO; Change it to be in config.json
+        areas = {
+            'Trabalho em equipe': TEMPLATE_TEAMWORK,
+            'Engenharia': TEMPLATE_ENGINEERING,
+            'Plano de Negócios': TEMPLATE_BUSINESSPLAN
+        }
 
-        # Define propriedades do documento
+        # TODO; Change it to be in config.json
+        # Retreive information from database
         [created_at, area, date, time, author, participants, title, description, images, hashtags, what1, why1, when1, what2, why2, when2, what3, why3, when3] = value;
 
+        # TODO; Change it to be in config.json
+        # Create a relation between placeholder words and database values
         textReplacementsToDo = [
             ['«DATA»', date],
             ['«HORARIO»', time],
@@ -136,10 +146,7 @@ for value in values:
             ['«HASHTAGS»', hashtags]
         ]
 
-        # Documento template
-        template_document = docsService.documents().get(documentId=areas[area]).execute()
-
-        # Replace nos textos
+        # Create a file using the template based on area
         body = {
             'name': documentTitle,
             'parents': [
@@ -150,6 +157,8 @@ for value in values:
         currentDocument = service.files().copy(fileId=areas[area], body=body).execute()
         currentDocumentId = currentDocument.get('id')
 
+        # Do some replacements on placeholder words to database values
+        # TODO: Use list comprehension
         requests = []
         for replacement in textReplacementsToDo:
             requests.append({
@@ -161,16 +170,16 @@ for value in values:
                     'replaceText': replacement[1]
                 }
             })
-
         docsService.documents().batchUpdate(documentId = currentDocumentId, body={'requests': requests}).execute()
 
+# Creates backup folder if doesn't exist yet
 if not path.exists(BACKUP_PATH_PDF):
     makedirs(BACKUP_PATH_PDF)
 
-# TODO Verificar se os arquivos pdf já existem
-
 responses = service.files().list(q = f"'{DEFAULT_FOLDER}' in parents and trashed = false", fields="nextPageToken, files(id,name)").execute()
 for file in responses.get('files', []):
+    # TODO: Check if we already downloaded this file
+    
     request = service.files().export_media(fileId=file.get('id'),
                                            mimeType='application/pdf')
     fh = io.FileIO(path.join(pathlib.Path().absolute(), BACKUP_PATH_PDF, f"{file.get('name')}.pdf"), 'wb')
@@ -178,25 +187,9 @@ for file in responses.get('files', []):
     done = False
     while done is False:
         done = downloader.next_chunk()
-    # TODO Para cada arquivo dentro da pasta local selecionada
-        # TODO Junte cada arquivo e faça o Caderno de Engenharia principal
 
-GERADO_FOLDER = '1gJ53q9tAjUoMHbf1YxaMhYE4P6Si-Dsa'
-FORMATADO_FOLDER = '1rBm4V_MSWtX2MJwdOR_QH8FW2cbmjaFn'
-EMANALISE_FOLDER = '1PJLD_l_0TFOkJVnUI57aufwDRtU4_TLD'
-RESOURCES_FOLDER = '1O0ERZ6_WBXBL3HW86EnNIBbDto_1hLO4';
+# TODO: Merge everything to only one document
 
-TEMPLATE_ENGINEERING = '1xED809H0-AgtPwJRPtr-piBhCYRl0ZbkPAJXjxN0LWI'
-TEMPLATE_BUSINESSPLAN = '1Fz9bdTujxcQmA03iUFt8mGgvvV2_4mc6HsmD4i0Tw-k'
-TEMPLATE_TEAMWORK = '1YOVMBbSXPFGIneTFW8XNJXOO2ilZYTeq1VmGf77NoGU';
-
-PARENTFILE_DOCUMENT = '15I8KBPShS7iXrzEs_Xm_1iBtgvon6v3KXzorycZHUt8';
-
-ENGINEERINGCOVER_DOCUMENT = '1a26hcaIzrlJCZcQ0y3oc8cmTggqeFHUQjej1vKPv2x8'
-BUSINESSPLANCOVER_DOCUMENT = '1SF5eAEj_yD-_pbb2Oc_UHoIWqgMrk5cDv_YRfF7134Q'
-TEAMWORKINGCOVER_DOCUMENT = '1ZWlRuzVDc33xFOEGOoeUjpzIQrKFrX7tB-eqyZcMdk0';
-
-MAINFILENAME_STRING = 'Caderno de Engenharia';
-
+# TODO: Make this code a class
 # if __name__ == '__main__':
 #     main()
