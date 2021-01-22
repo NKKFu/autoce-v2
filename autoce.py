@@ -158,18 +158,16 @@ for value in values:
         currentDocumentId = currentDocument.get('id')
 
         # Do some replacements on placeholder words to database values
-        # TODO: Use list comprehension
-        requests = []
-        for replacement in textReplacementsToDo:
-            requests.append({
-                'replaceAllText': {
-                    'containsText': {
-                        'text': replacement[0],
-                        'matchCase':  'true'
-                    },
-                    'replaceText': replacement[1]
-                }
-            })
+        request = [
+        {
+            'replaceAllText': {
+                'containsText': {
+                    'text': replacement[0],
+                    'matchCase':  'true'
+                },
+                'replaceText': replacement[1]
+            }
+        } for replacement in textReplacementsToDo]
         docsService.documents().batchUpdate(documentId = currentDocumentId, body={'requests': requests}).execute()
 
 # Creates backup folder if doesn't exist yet
