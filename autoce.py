@@ -41,7 +41,12 @@ service = build('drive', 'v3', credentials=creds)
 sheetsService = build('sheets', 'v4', credentials=creds)
 docsService = build('docs', 'v1', credentials=creds)
 
-config = json.loads()
+# Checks if config.json exists
+# TODO: Check if all necessary keys exists inside json file
+if not path.exists('config.json'):
+    Exception('You need provide a config.json')
+
+config = json.load(open('config.json'))
 
 DATABASE_SHEET = config['DATABASE_SHEET']
 DEFAULT_FOLDER = config['DEFAULT_FOLDER']
