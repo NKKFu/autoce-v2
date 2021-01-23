@@ -51,10 +51,6 @@ config = json.load(open('config.json'))
 DATABASE_SHEET = config['DATABASE_SHEET']
 DEFAULT_FOLDER = config['DEFAULT_FOLDER']
 
-TEMPLATE_ENGINEERING = config['TEMPLATE_ENGINEERING']
-TEMPLATE_BUSINESSPLAN = config['TEMPLATE_BUSINESSPLAN']
-TEMPLATE_TEAMWORK = config['TEMPLATE_TEAMWORK']
-
 sheet = sheetsService.spreadsheets()
 
 # Count how many columns
@@ -119,13 +115,13 @@ for index, value in enumerate(values):
     # Else, create one using database information
     else:
         # Relations between area and Document ID for template
-        # TODO; Change it to be in config.json
-        areas = {
-            'Trabalho em equipe': TEMPLATE_TEAMWORK,
-            'Engenharia': TEMPLATE_ENGINEERING,
-            'Plano de Negócios': TEMPLATE_BUSINESSPLAN
-        }
-
+        # TODO: Change it to list comprehension
+        areas = []
+        for templateFile in config['TEMPLATE_FILES_ID']:
+            # For each file template, get his name and his ID for map every template
+            # avaliable on Drive
+            areas.append(((templateFile['name'], templateFile['id'])))
+        
         # TODO: Change it to list comprehension
         textReplacementsToDo = []
         for fieldIndex, field in enumerate(config['DATABASE_FIELDS_REPRESENTATION']):
@@ -141,7 +137,15 @@ for index, value in enumerate(values):
             ]
         }
 
-        currentDocument = service.files().copy(fileId=areas[area], body=body).execute()
+        # Get templata file ID 
+        templateFileId = [x[1] for x in areas if x[0] == area]
+
+        if templateFileId[0] != '':
+            templateFileId = templateFileId[0]
+        else:
+            Exception(f"There is no template string for: {area}")
+
+        currentDocument = service.files().copy(fileId=templateFileId, body=body).execute()
         currentDocumentId = currentDocument.get('id')
 
         # Do some replacements on placeholder words to database values
