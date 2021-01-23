@@ -41,7 +41,12 @@ service = build('drive', 'v3', credentials=creds)
 sheetsService = build('sheets', 'v4', credentials=creds)
 docsService = build('docs', 'v1', credentials=creds)
 
-config = json.loads()
+# Checks if config.json exists
+# TODO: Check if all necessary keys exists inside json file
+if not path.exists('config.json'):
+    Exception('You need provide a config.json')
+
+config = json.load(open('config.json'))
 
 DATABASE_SHEET = config['DATABASE_SHEET']
 DEFAULT_FOLDER = config['DEFAULT_FOLDER']
@@ -72,6 +77,7 @@ for row in values:
     while len(row) < column_quantity:
         row.append("")
 
+# TODO: Put that on the config.json
 # Backup of database (folder name)
 BACKUP_PATH="backup"
 # Backup of generated PDF's  (folder name)
