@@ -1,4 +1,31 @@
 {
+    "TEMPLATE_FILES_ID": [
+        {
+            "name": "",
+            "id": ""
+        }
+    ],
+    "DATABASE_FIELDS_REPRESENTATION": [
+        "«CREATED_AT»",
+        "«AREA»",
+        "«DATA»",
+        "«HORARIO»",
+        "«AUTOR»",
+        "«PARTICIPANTES»",
+        "«ASSUNTO»",
+        "«DESCRICAO»",
+        "«IMAGENS»",
+        "«HASHTAGS»",
+        "«OQUE1»",
+        "«PORQUE1»",
+        "«PRAZO1»",
+        "«OQUE2»",
+        "«PORQUE2»",
+        "«PRAZO2»",
+        "«OQUE3»",
+        "«PORQUE3»",
+        "«PRAZO3»"
+    ],
     "DATABASE_SHEET":"1tqXLhhnO1jdvmD6ZHkCizdj946JaeeOZmeh48AugtNo",
     "DEFAULT_FOLDER":"1AUDZPuUGHPzBTXGuRTfPezgmmCE6mmmk",
     "TEMPLATE_ENGINEERING":"1xED809H0-AgtPwJRPaa-piBhCYRl0ZbkPAJXjxN0LWI",
