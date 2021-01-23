@@ -77,6 +77,7 @@ for row in values:
     while len(row) < column_quantity:
         row.append("")
 
+# TODO: Put that on the config.json
 # Backup of database (folder name)
 BACKUP_PATH="backup"
 # Backup of generated PDF's  (folder name)
