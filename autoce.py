@@ -95,7 +95,7 @@ with open (path.join(pathlib.Path().absolute(), BACKUP_PATH, f"{file_name}.bkp")
     file.write(str(values))
 
 # For each row in the database (ignore the first one, based on query)
-for value in values:
+for index, value in enumerate(values):
 
     # Some changes because of the date and time format
     # (if doesn't do that, can causes conflicts due the "/")
@@ -126,32 +126,13 @@ for value in values:
             'Plano de Negócios': TEMPLATE_BUSINESSPLAN
         }
 
-        # TODO; Change it to be in config.json
-        # Retreive information from database
-        [created_at, area, date, time, author, participants, title, description, images, hashtags, what1, why1, when1, what2, why2, when2, what3, why3, when3] = value;
-
-        # TODO; Change it to be in config.json
-        # Create a relation between placeholder words and database values
-        textReplacementsToDo = [
-            ['«DATA»', date],
-            ['«HORARIO»', time],
-            ['«AUTOR»', author],
-            ['«PARTICIPANTES»', participants],
-            ['«ASSUNTO»', title],
-            ['«DESCRICAO»', description],
-            ['«IMAGENS»', images],
-            ['«OQUE1»', what1],
-            ['«PORQUE1»', why1],
-            ['«PRAZO1»', when1],
-            ['«OQUE2»', what2],
-            ['«PORQUE2»', why2],
-            ['«PRAZO2»', when2],
-            ['«OQUE3»', what3],
-            ['«PORQUE3»', why3],
-            ['«PRAZO3»', when3],
-            ['«HASHTAGS»', hashtags]
-        ]
-
+        # TODO: Change it to list comprehension
+        textReplacementsToDo = []
+        for fieldIndex, field in enumerate(config['DATABASE_FIELDS_REPRESENTATION']):
+            # Get a field and his representation for each correspondent in database column
+            # we do that for replace in the document
+            textReplacementsToDo.append([field, values[index][fieldIndex]])
+        
         # Create a file using the template based on area
         body = {
             'name': documentTitle,
@@ -164,8 +145,7 @@ for value in values:
         currentDocumentId = currentDocument.get('id')
 
         # Do some replacements on placeholder words to database values
-        request = [
-        {
+        requests = [{
             'replaceAllText': {
                 'containsText': {
                     'text': replacement[0],
