@@ -1,8 +1,16 @@
 {
     "TEMPLATE_FILES_ID": [
         {
-            "name": "",
-            "id": ""
+            "name": "Trabalho em equipe",
+            "id": "1xED809H0-AgtPwJRPtr-eaBhCYRl0ZbkPAJXjxN0LWI"
+        },
+        {
+            "name": "Engenharia",
+            "id": "1Fz9bdTujxcQmA03iUFt8mGgvvV2_4mc6HsmD4i0Tx-e"
+        },
+        {
+            "name": "Plano de Negócios",
+            "id": "1YOVMBbSXPFGIneTFW8XNJXOO2ilZYTxq1VmGf77NaGU"
         }
     ],
     "DATABASE_FIELDS_REPRESENTATION": [
@@ -27,8 +35,5 @@
         "«PRAZO3»"
     ],
     "DATABASE_SHEET":"1tqXLhhnO1jdvmD6ZHkCizdj946JaeeOZmeh48AugtNo",
-    "DEFAULT_FOLDER":"1AUDZPuUGHPzBTXGuRTfPezgmmCE6mmmk",
-    "TEMPLATE_ENGINEERING":"1xED809H0-AgtPwJRPaa-piBhCYRl0ZbkPAJXjxN0LWI",
-    "TEMPLATE_BUSINESSPLAN":"1Fz9bdTuaaaQmA03aUFt8mGgvvV2_4mc6HsmD4i0Tw-k",
-    "TEMPLATE_TEAMWORK":"1YOVMBbSXPFGIeeTFW8XNJXOO2elZYTeq1VmGf77NoGU"
+    "DEFAULT_FOLDER":"1AUDZPuUGHPzBTXGuRTfPezgmmCE6mmmk"
 }
