@@ -6,7 +6,19 @@ Thanks for seeing my repository, I appreciate that:)
 
 ## How it works
 
-- - -
+Our python program integrates with Google Docs, Drive and Sheets API to request some data from its sources.
+
+First, we collect all data avaliable in the main database source `DATABASE_SHEET` inside the Google Spreadsheet based on the columns `DATABASE_FIELDS_REPRESENTATION` of the first sheet.
+
+First, we collect all the data available from the main source of the database `DATABASE_SHEET` within Google Spreadsheet based on the `DATABASE_FIELDS_REPRESENTATION` columns in the first spreadsheet.
+
+> We back up the database, just to ensure that we don't lose data. But we ** can't change anything in the database, just read **
+
+Based on this information, we generate many files using a copy of the template files `TEMPLATE_FILES_ID` and replacing each specified field` DATABASE_FIELDS_REPRESENTATION` with its correspondent in the database _(based on the order, therefore the order in the database fields and in config.json is important to us)_
+
+> **THE FIRST THREE DATABASE COLUMNS MUST BE: CREATED_AT, AREA, DATE**, but the names don't matter, just the order of those elements.
+
+After generating these files, we put them in a specific Google Drive folder `DEFAULT_FOLDER`, and then we download them in PDF format on our computer _(just to make a backup of the files)_
 
 ## Requirements
 
@@ -44,8 +56,9 @@ Thanks for seeing my repository, I appreciate that:)
 - Rename it to credentials.json
 - Download python library required for this project by executig this commands:
     - `pip install -r requirements.txt` or `pip3 install -r requirements.txt`
-> Need to change this steps, don't do the steps bellow
-- Change file config.json
+- Open file example_config.json
+    - Rename it to config.json 
+    - Change some fields based on your configuration setup
 - Execute this on your command line:
     - `python autoce.py` or `python3 autoce.py`
 
