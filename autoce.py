@@ -160,13 +160,19 @@ for index, value in enumerate(values):
         } for replacement in textReplacementsToDo]
         docsService.documents().batchUpdate(documentId = currentDocumentId, body={'requests': requests}).execute()
 
+print("Downloading files...")
+
 # Creates backup folder if doesn't exist yet
 if not path.exists(BACKUP_PATH_PDF):
     makedirs(BACKUP_PATH_PDF)
 
 responses = service.files().list(q = f"'{DEFAULT_FOLDER}' in parents and trashed = false", fields="nextPageToken, files(id,name)").execute()
 for file in responses.get('files', []):
-    # TODO: Check if we already downloaded this file
+    exists = path.exists(path.join (BACKUP_PATH_PDF, f"{file['name']}.pdf"))
+
+    # Check if we already downloaded this file
+    if exists:
+        continue
     
     request = service.files().export_media(fileId=file.get('id'),
                                            mimeType='application/pdf')
