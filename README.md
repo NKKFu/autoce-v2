@@ -62,6 +62,11 @@ After generating these files, we put them in a specific Google Drive folder `DEF
 - Execute this on your command line:
     - `python autoce.py` or `python3 autoce.py`
 
+## Docs for Google API and used libraries
+- https://github.com/googleapis/google-api-python-client
+- https://developers.google.com/drive/api/v3/quickstart/python#troubleshooting
+- https://developers.google.com/sheets/api/guides/values#python_1
+
 ## License and credits
 
 This project was idealized and partially developed by Nelson Kenmochi, a member from Team ProdiXy # 16050 from Brazil. It uses MIT license, feel free to use, modify and collaborate as you want without hurt it's license.
