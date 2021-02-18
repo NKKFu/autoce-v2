@@ -103,7 +103,7 @@ for index, value in enumerate(values):
     area        = str(value[1])
 
     # Create a default title as format: [DATE]$[CREATED_AT]$[AREA]
-    documentTitle = f"{date}${created_at}${area}"
+    documentTitle = f"{date}_{created_at}_{area}".replace(' ','').replace(':','x')
     print(f"Using title: {documentTitle}")
 
     # Check if is there any document with this title
