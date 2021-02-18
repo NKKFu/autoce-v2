@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pickle
 from os import path, makedirs
 from googleapiclient.discovery import build
@@ -46,7 +48,8 @@ docsService = build('docs', 'v1', credentials=creds)
 if not path.exists('config.json'):
     Exception('You need provide a config.json')
 
-config = json.load(open('config.json'))
+with open('config.json', encoding='utf-8') as fh:
+    config = json.load(fh)
 
 DATABASE_SHEET = config['DATABASE_SHEET']
 DEFAULT_FOLDER = config['DEFAULT_FOLDER']
@@ -87,7 +90,7 @@ if not path.exists(BACKUP_PATH):
 # Write database backup in format: month.day_hour_minute_second to doesn't conflit to another backup
 curr_time = datetime.now()
 file_name = f"{curr_time.month}.{curr_time.day}_{curr_time.hour}_{curr_time.minute}_{curr_time.second}"
-with open (path.join(pathlib.Path().absolute(), BACKUP_PATH, f"{file_name}.bkp"), 'w') as file:
+with open (path.join(pathlib.Path().absolute(), BACKUP_PATH, f"{file_name}.bkp"), 'w', encoding='utf-8') as file:
     file.write(str(values))
 
 # For each row in the database (ignore the first one, based on query)
